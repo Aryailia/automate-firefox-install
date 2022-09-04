@@ -31,21 +31,28 @@ In addition the list above:
 <<EOF dot -Tsvg >"images/arkenfox.svg"
 digraph {
   rankdir="LR"
-  Arkenfox [href="https://github.com/arkenfox/user.js"]
+  ArkenfoxL[label="Arkenfox\nBash Script"href="https://github.com/arkenfox/user.js"]
   Template1[label="user.js v1"]
   Template2[label="user.js v2"]
-  Output   [label="<profile>/user.js"]
-  Bash     [label="Bash script"]
+  Output1  [label="<profile>/user.js v1"]
+  Output2  [label="<profile>/user.js v2"]
+  ArkenfoxR[label="Arkenfox\nBash Script"]
 
-  Arkenfox  -> Template1;
-  Arkenfox  -> Template2;
-  Arkenfox  -> Bash
-  "*.js"    -> Output
+  ArkenfoxL -> Template1;
+  ArkenfoxL -> Template2;
+  ArkenfoxR -> Output1;
+  ArkenfoxR -> Output2;
 
-  Template1 -> Bash
-  Bash -> Template2 [label="update"]
-  Template2 -> Output
-  { rank=same; Bash; Template1; Template2; }
+  Template1 -> Template2 [label="update"]
+
+  "*.js"    -> Output1
+  Template1 -> Output1
+  "*.js"    -> Output2
+  Template2 -> Output2
+
+  { rank=same; Template1; Template2; }
+  { rank=same; ArkenfoxL; "*.js"; }
+  { rank=sink; ArkenfoxR; }
 }
 EOF
 ```
@@ -69,14 +76,13 @@ digraph {
   Template2[label="user.js v2"]
   Output   [label="<profile>/user.js"]
 
-  Project -> Template2   [label="Download"]
-  Template1 -> Template2 [label="Diff"]
+  Template1 -> Template2
+  Project   -> Template2 [label="Download & Diff"]
 
-  Project -> Combine
-  "*.js"  -> Combine
-  Combine -> Output
   Project -> "Deploy addons"
-  { rank=same; Template2; Combine; "Deploy addons"; }
+  Project -> Output /* label should be for this edge but it looks better lower */
+  "*.js"  -> Output [label="Build\n*.js"]
+  { rank=same; Template2; "Deploy addons"; }
 }
 EOF
 ```
@@ -136,7 +142,8 @@ If they do, then storing the `browser.uiCustomisation.state`, `extensions.json`,
 
 # Useful links
 
-* [Arkenfox/user.js), formerly ghacks/user.js, that provides detailed documentation and bash script workflow for deploying firefox advanced settings (`about:config`](https://github.com/arkenfox/user.js) that are more privacy and security focused.
+* [Arkenfox/user.js](https://github.com/arkenfox/user.js), formerly ghacks/user.js, that provides detailed documentation and bash script workflow for deploying firefox advanced settings (`about:config`) that are more privacy and security focused.
+
 * `about:debugging` potentially for webdriver usage. Gives access to controlling through Firefox's debugger, firebug.
 * `about:support` for a nice listing of all the diagnostic information, like what profile we are currently using.
 * `about:profiles`
