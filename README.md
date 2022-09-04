@@ -1,7 +1,7 @@
-//run: tetra-cli parse % README.adoc
-= Provisioning Firefox Profiles
 
-This project is an attempt to fully deploy (provision) a fresh Mozilla Firefox install, that incorporates the security hardening settings from the https://github.com/arkenfox/user.js[Arkenfox/user.js] project.
+# Provisioning Firefox Profiles
+
+This project is an attempt to fully deploy (provision) a fresh Mozilla Firefox install, that incorporates the security hardening settings from the [Arkenfox/user.js](https://github.com/arkenfox/user.js) project.
 This is for version 104.0, which is after the migration to WebExtensions API.
 In particular that means:
 
@@ -18,47 +18,53 @@ In particular that means:
 Inspired by things tools such as Nix, Terraform, and Ansible, this project is trying to create fully configured Firefox at the click of one button.
 Additionally, this project provides a nice CLI interface to keep up with updates from Arkenfox.
 
-== TODO
+# TODO
 
 In addition the list above:
 
 * [ ] Tracking updates from the upstream Arkenfox project
 * [ ] Tab completion via `${COMP_LINE}`
 
-== How this differs from Arkenfox workflow
+# How this differs from Arkenfox workflow
 
-```{| body = |}
+```
+<<EOF dot -Tsvg >"images/arkenfox.svg"
 digraph {
   rankdir="LR"
-  Arkenfox[href="https://github.com/arkenfox/user.js"]
-  Template[label="user.js"]
-  Output  [label="<profile>/user.js"]
-  Bash    [label="Bash script"]
+  Arkenfox [href="https://github.com/arkenfox/user.js"]
+  Template1[label="user.js v1"]
+  Template2[label="user.js v2"]
+  Output   [label="<profile>/user.js"]
+  Bash     [label="Bash script"]
 
-  Arkenfox -> Template;
-  Template -> Output
-  "*.js"   -> Output
+  Arkenfox  -> Template1;
+  Arkenfox  -> Template2;
+  Arkenfox  -> Bash
+  "*.js"    -> Output
 
-  Arkenfox -> Bash
-  Bash -> Template [label="update"]
-  { rank=same; Bash; Template; }
+  Template1 -> Bash
+  Bash -> Template2 [label="update"]
+  Template2 -> Output
+  { rank=same; Bash; Template1; Template2; }
 }
-{| end |}```
+EOF
+```
 
-++++
-{$ run "dot", "-Tsvg", body $}
-++++
+![hello](images/arkenfox.svg)
 
-This is based on the work of https://github.com/arkenfox/user.js[Arkenfox] project.
+
+This is based on the work of [Arkenfox](https://github.com/arkenfox/user.js) project.
 The workflow of the Arkenfox project is that, after git cloning the project into a directory, they provide provide you with `user.js` that has defaults that are not intended to be useable out-of-the-box.
 You create any number of additional JavaScript files that will override those settings, customised to your particular needs.
 Then you use the script in the Arkenfox project to combine all the JavaScript files and copy to `<firefox-profile>/user.js` (e.g. `/home/jane-doe/.mozilla/firefox/34ahf5xy.default/user.js`
 Additionally, you use the script to update the provided default `user.js`.
 
 
-```{| body = |}
+```
+<<EOF dot -Tsvg >"images/project.svg"
 digraph {
   rankdir="LR"
+  Project  [label="This project"]
   Template1[label="user.js v1"]
   Template2[label="user.js v2"]
   Output   [label="<profile>/user.js"]
@@ -72,18 +78,18 @@ digraph {
   Project -> "Deploy addons"
   { rank=same; Template2; Combine; "Deploy addons"; }
 }
-{| end |}```
+EOF
+```
 
-++++
-{$ run "dot", "-Tsvg", body $}
-++++
+
+![hello](images/project.svg)
 
 The workflow of this project creating the `<profile>/user.js` from just the JavaScript files.
 The Arkenfox's `user.js` template file is used only to compare versions to see what has changed since the previous version.
 Any updates that you like you can copy over to your JavaScript files.
 Additionally, this project provides methods for diffing a local copy of Arkenfox's `user.js` and online version of Arkenfox's most up-to-date `user.js`.
 
-== Steps moving forward
+# Steps moving forward
 
 It seems not possible to fully automate extension installation.
 There seem to be several disparate locations that settings are stored for addons (see next section).
@@ -96,15 +102,15 @@ However, I've seen competing claims that Selenium explicitly does or does not of
 Another possible route would be to connect Selenium to the debugger.
 Although I was successful at making Selenium open a new instance (as one would do for normal webscrapping or integration testing), I could not figure out how to connect it to an already running Firefox instance.
 
-== Minimal Firefox Setup for storing addon settings
+# Minimal Firefox Setup for storing addon settings
 
 The five extensions I use are:
 
-* https://addons.mozilla.org/en-GB/firefox/addon/ublock-origin[ublock-origin]
-* https://addons.mozilla.org/en-GB/firefox/addon/noscript[NoScript] for blocking specific domains. Although uBlock Origin offers JavaScript blocking and having less extensions means less liabilities, NoScript allows me to have fine-grain control over specific domains I want to allow.
-* https://addons.mozilla.org/en-GB/firefox/addon/cookie-autodelete[cookie-autodelete]
-* https://addons.mozilla.org/en-GB/firefox/addon/history-cleaner[history-cleaner] to clear history at startup. History is on vector for finger printing, and I cannot use Firefox's clear history on exit if I want session restore, i.e. I cannot use "Privacy & Security > History > Clear history when Firefox closes > Browser & Download History" if I want "General > Startup > Open previous windows and tabs".
-* https://addons.mozilla.org/en-GB/firefox/addon/videospeed[Video Speed Controller] adds controls for consuming media at increased or decreased speeds. There is no way to export settings for this extension.
+* [ublock-origin](https://addons.mozilla.org/en-GB/firefox/addon/ublock-origin)
+* [NoScript](https://addons.mozilla.org/en-GB/firefox/addon/noscript) for blocking specific domains. Although uBlock Origin offers JavaScript blocking and having less extensions means less liabilities, NoScript allows me to have fine-grain control over specific domains I want to allow.
+* [cookie-autodelete](https://addons.mozilla.org/en-GB/firefox/addon/cookie-autodelete)
+* [history-cleaner](https://addons.mozilla.org/en-GB/firefox/addon/history-cleaner) to clear history at startup. History is on vector for finger printing, and I cannot use Firefox's clear history on exit if I want session restore, i.e. I cannot use "Privacy & Security > History > Clear history when Firefox closes > Browser & Download History" if I want "General > Startup > Open previous windows and tabs".
+* [Video Speed Controller](https://addons.mozilla.org/en-GB/firefox/addon/videospeed) adds controls for consuming media at increased or decreased speeds. There is no way to export settings for this extension.
 
 XPI files are just zip files.
 Just putting downloaded addons in the `extensions/` directory is not sufficient.
@@ -128,15 +134,15 @@ I am not entirely sure what the difference is between `addons.json`, `extensions
 I am currently unsure if UUIDs for extensions change if you update them.
 If they do, then storing the `browser.uiCustomisation.state`, `extensions.json`, etc. is a bit fragile.
 
-== Useful links
+# Useful links
 
-* https://github.com/arkenfox/user.js[Arkenfox/user.js), formerly ghacks/user.js, that provides detailed documentation and bash script workflow for deploying firefox advanced settings (`about:config`] that are more privacy and security focused.
+* [Arkenfox/user.js), formerly ghacks/user.js, that provides detailed documentation and bash script workflow for deploying firefox advanced settings (`about:config`](https://github.com/arkenfox/user.js) that are more privacy and security focused.
 * `about:debugging` potentially for webdriver usage. Gives access to controlling through Firefox's debugger, firebug.
 * `about:support` for a nice listing of all the diagnostic information, like what profile we are currently using.
 * `about:profiles`
 * `about:config`
-* https://github.com/alza-bitz/ansible-firefox-addon[ansible-firefox-addon) is the ansible role, aka. package, for installing addons]. This is code target at before Firefox migrated from XPCOM/XUL extensions to the current WebExtensions API.
-* https://github.com/alza-bitz/ansible-firefox[ansible-firefox] is the ansible role that uses `ansible-firefox-addon` to also install user.js
-* https://askubuntu.com/questions/73474/[Installing addons from scripts] stackoverflow question. Again this is for pre-WebExtensions API. In particular
-* https://github.com/Rasukarusan/shellnium[Shellnium] is a WebDriver wrapper for bash that works via curl. It is primarily setup for Chrome, but the modifying it to work for Firefox should be simple.
-* http://github.com/mozilla/geckodriver/issues/430[Gecko driver issue]
+* [ansible-firefox-addon) is the ansible role, aka. package, for installing addons](https://github.com/alza-bitz/ansible-firefox-addon). This is code target at before Firefox migrated from XPCOM/XUL extensions to the current WebExtensions API.
+* [ansible-firefox](https://github.com/alza-bitz/ansible-firefox) is the ansible role that uses `ansible-firefox-addon` to also install user.js
+* [Installing addons from scripts](https://askubuntu.com/questions/73474/) stackoverflow question. Again this is for pre-WebExtensions API. In particular
+* [Shellnium](https://github.com/Rasukarusan/shellnium) is a WebDriver wrapper for bash that works via curl. It is primarily setup for Chrome, but the modifying it to work for Firefox should be simple.
+* [Gecko driver issue](http://github.com/mozilla/geckodriver/issues/430)
